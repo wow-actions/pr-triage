@@ -21,6 +21,7 @@ export namespace Util {
 
   export async function ensureLabels(octokit: Octokit) {
     const labels = Object.values(Config.defaults.labels)
+    console.log('ensureLabels', labels)
     return Promise.all(
       labels.map(async ({ name, color, description }) => {
         try {
@@ -31,6 +32,7 @@ export namespace Util {
           console.log(data)
           return data
         } catch (error) {
+          console.log(error)
           return octokit.issues.createLabel({
             ...github.context.repo,
             name,

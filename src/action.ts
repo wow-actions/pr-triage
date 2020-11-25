@@ -1,9 +1,13 @@
 import * as core from '@actions/core'
+import * as github from '@actions/github'
 import { Util } from './util'
 
 export namespace Action {
   export async function run() {
     try {
+      console.log(
+        `event: ${github.context.eventName}, action: ${github.context.payload.action}`,
+      )
       if (
         Util.isValidEvent('pull_request', 'opened') ||
         Util.isValidEvent('pull_request', 'closed') ||
