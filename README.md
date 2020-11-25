@@ -14,7 +14,7 @@ on:
   pull_request_review:
     types: [submitted, dismissed]
 jobs:
-  run:
+  triage:
     runs-on: ubuntu-latest
     steps:
       - uses: bubkoo/pr-triage@v1
