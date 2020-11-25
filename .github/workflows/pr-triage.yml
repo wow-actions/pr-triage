@@ -22,4 +22,4 @@ jobs:
           yarn build
       - uses: ./
         with:
-          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN  }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
