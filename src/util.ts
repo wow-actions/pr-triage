@@ -20,20 +20,19 @@ export namespace Util {
   }
 
   export async function ensureLabels(octokit: Octokit) {
-    const context = github.context
     const labels = Object.values(Config.defaults.labels)
     for (let i = 0, l = labels.length; i < l; i += 1) {
       const { name, color, description } = labels[i]
-      const { data } = await octokit.issues.getLabel({ ...context.repo, name })
-      console.log(data)
-      if (data == null) {
-        await octokit.issues.createLabel({
-          ...context.repo,
-          name,
-          color,
-          description,
+      await octokit.issues
+        .getLabel({ ...github.context.repo, name })
+        .catch(() => {
+          return octokit.issues.createLabel({
+            ...github.context.repo,
+            name,
+            color,
+            description,
+          })
         })
-      }
     }
   }
 
