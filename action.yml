@@ -12,5 +12,5 @@ runs:
   main: dist/index.js
 
 branding:
-  icon: copy
+  icon: check
   color: orange # gray-dark purple red orange green blue yellow black white
