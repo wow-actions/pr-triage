@@ -21,18 +21,14 @@ export namespace Util {
 
   export async function ensureLabels(octokit: Octokit) {
     const labels = Object.values(Config.defaults.labels)
-    console.log('ensureLabels', labels)
     return Promise.all(
-      labels.map(async ({ name, color, description }) => {
+      labels.map(({ name, color, description }) => {
         try {
-          const { data } = await octokit.issues.getLabel({
+          return octokit.issues.getLabel({
             ...github.context.repo,
             name,
           })
-          console.log(data)
-          return data
         } catch (error) {
-          console.log(error)
           return octokit.issues.createLabel({
             ...github.context.repo,
             name,
@@ -46,13 +42,11 @@ export namespace Util {
 
   function getPullRequest() {
     const context = github.context
-    return (
-      context.payload.pull_request ||
-      (context.payload.review.pull_request as Exclude<
-        typeof context.payload.pull_request,
-        undefined
-      >)
-    )
+    return (context.payload.pull_request ||
+      context.payload.review.pull_request) as Exclude<
+      typeof context.payload.pull_request,
+      undefined
+    >
   }
 
   async function getReviews(octokit: Octokit) {
@@ -130,7 +124,6 @@ export namespace Util {
         )
       })
       .catch((err) => {
-        console.log(err)
         // Return the minium number of reviews if it's 403 or 403 because
         // Administration Permission is not granted (403) or Branch Protection
         // is not set up(404).
@@ -215,6 +208,7 @@ export namespace Util {
     currentState: Config.State,
   ) {
     const previousState = getPreviousState()
+    core.info(`previous state: ${previousState}`)
     if (previousState) {
       if (currentState === 'wip') {
         await removeLabelByState(octokit, previousState as Config.Label)
