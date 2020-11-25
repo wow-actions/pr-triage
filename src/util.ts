@@ -23,14 +23,17 @@ export namespace Util {
     const context = github.context
     const labels = Object.values(Config.defaults.labels)
     for (let i = 0, l = labels.length; i < l; i += 1) {
-      const { name, color } = labels[i]
-      await octokit.issues.getLabel({ ...context.repo, name }).catch(() =>
-        octokit.issues.createLabel({
+      const { name, color, description } = labels[i]
+      const { data } = await octokit.issues.getLabel({ ...context.repo, name })
+      console.log(data)
+      if (data == null) {
+        await octokit.issues.createLabel({
           ...context.repo,
           name,
           color,
-        }),
-      )
+          description,
+        })
+      }
     }
   }
 
@@ -265,7 +268,7 @@ export namespace Util {
 
   async function getLabelByState(
     state: Config.Label,
-  ): Promise<{ name: string; color: string }> {
+  ): Promise<{ name: string; color: string; description: string }> {
     return new Promise((resolve, reject) => {
       const labels = getPullRequest().labels
       const preset = Config.defaults.labels[state]
