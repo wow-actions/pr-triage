@@ -22,20 +22,20 @@ export namespace Util {
   export async function ensureLabels(octokit: Octokit) {
     const labels = Object.values(Config.defaults.labels)
     return Promise.all(
-      labels.map(({ name, color, description }) => {
-        try {
-          return octokit.issues.getLabel({
+      labels.map(async ({ name, color, description }) => {
+        return octokit.issues
+          .getLabel({
             ...github.context.repo,
             name,
           })
-        } catch (error) {
-          return octokit.issues.createLabel({
-            ...github.context.repo,
-            name,
-            color,
-            description,
+          .catch(() => {
+            return octokit.issues.createLabel({
+              ...github.context.repo,
+              name,
+              color,
+              description,
+            })
           })
-        }
       }),
     )
   }
