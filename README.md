@@ -1,6 +1,6 @@
 # PR Triage
 
-> GitHub action to add a label depending on the pull request's status.
+> GitHub Action to add a label depending on the pull request's status.
 
 ## Usage
 
