@@ -1,0 +1,16 @@
+name: PR Triage
+description: Add a label depending on the pull request's status.
+author: bubkoo <bubkoo.wy@gmail.com>
+
+inputs:
+  GITHUB_TOKEN:
+    description: Your GitHub token for authentication.
+    required: true
+
+runs:
+  using: node12
+  main: dist/index.js
+
+branding:
+  icon: copy
+  color: orange # gray-dark purple red orange green blue yellow black white
