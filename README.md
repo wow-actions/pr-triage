@@ -4,7 +4,7 @@
 
 ## Usage
 
-Create a `.github/workflows/pr-triage.yml` file in the repository you want to install this action, then add the following to it:
+Create a `.github/workflows/pr-triage.yml` file in the repository you want to install this action.
 
 ```yml
 name: PR Triage
