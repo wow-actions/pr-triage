@@ -26,10 +26,10 @@ jobs:
 
 Only watching the most recent commit :eyes::
 
-Do nothing when the PR's title starts from `WIP`, `[WIP]` or `WIP:`.
-Add the `PR: unreviewed` label when the PR does not have any reviews.
-Add the `PR: reviewed-changes-requested` label when the PR has reviewed and got `Change request` event.
-Add the `PR: review-approved` label when the PR has reviewed and got `Approve` event.
+- Do nothing when the PR's title starts from `WIP`, `[WIP]` or `WIP:`.
+- Add the `PR: unreviewed` label when the PR does not have any reviews.
+- Add the `PR: reviewed-changes-requested` label when the PR has reviewed and got `Change request` event.
+- Add the `PR: review-approved` label when the PR has reviewed and got `Approve` event.
 
 ## License
 
