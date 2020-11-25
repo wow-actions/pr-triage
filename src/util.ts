@@ -21,19 +21,25 @@ export namespace Util {
 
   export async function ensureLabels(octokit: Octokit) {
     const labels = Object.values(Config.defaults.labels)
-    for (let i = 0, l = labels.length; i < l; i += 1) {
-      const { name, color, description } = labels[i]
-      await octokit.issues
-        .getLabel({ ...github.context.repo, name })
-        .catch(() => {
+    return Promise.all(
+      labels.map(async ({ name, color, description }) => {
+        try {
+          const { data } = await octokit.issues.getLabel({
+            ...github.context.repo,
+            name,
+          })
+          console.log(data)
+          return data
+        } catch (error) {
           return octokit.issues.createLabel({
             ...github.context.repo,
             name,
             color,
             description,
           })
-        })
-    }
+        }
+      }),
+    )
   }
 
   function getPullRequest() {
@@ -108,20 +114,21 @@ export namespace Util {
           previews: ['luke-cage'],
         },
       })
-      .then((res) => {
+      .then(({ data }) => {
         // If the Branch protection rule is configure but the Requrie pull
         // request review before mergning is not set, it does not have
         // `required_pull_request_reviews` property
-        if (!res.data.hasOwnProperty('required_pull_request_reviews')) {
+        if (!data.hasOwnProperty('required_pull_request_reviews')) {
           throw new Error('Required reviews not configured error')
         }
 
         return (
-          res.data.required_pull_request_reviews
-            .required_approving_review_count || 1
+          data.required_pull_request_reviews.required_approving_review_count ||
+          1
         )
       })
       .catch((err) => {
+        console.log(err)
         // Return the minium number of reviews if it's 403 or 403 because
         // Administration Permission is not granted (403) or Branch Protection
         // is not set up(404).
