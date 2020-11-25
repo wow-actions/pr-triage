@@ -15,6 +15,12 @@ export namespace Action {
         Util.isValidEvent('pull_request', 'reopened') ||
         Util.isValidEvent('pull_request', 'synchronize') ||
         Util.isValidEvent('pull_request', 'ready_for_review') ||
+        Util.isValidEvent('pull_request_target', 'opened') ||
+        Util.isValidEvent('pull_request_target', 'closed') ||
+        Util.isValidEvent('pull_request_target', 'edited') ||
+        Util.isValidEvent('pull_request_target', 'reopened') ||
+        Util.isValidEvent('pull_request_target', 'synchronize') ||
+        Util.isValidEvent('pull_request_target', 'ready_for_review') ||
         Util.isValidEvent('pull_request_review', 'submitted') ||
         Util.isValidEvent('pull_request_review', 'dismissed')
       ) {
