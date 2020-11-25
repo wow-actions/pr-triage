@@ -209,6 +209,7 @@ export namespace Util {
   ) {
     const previousState = getPreviousState()
     core.info(`previous state: ${previousState}`)
+    core.info(`current state: ${currentState}`)
     if (previousState) {
       if (currentState === 'wip') {
         await removeLabelByState(octokit, previousState as Config.Label)
@@ -241,6 +242,7 @@ export namespace Util {
   }
 
   async function removeLabelByState(octokit: Octokit, state: Config.Label) {
+    core.info(`remove label by state: ${state}`)
     return getLabelByState(state).then(
       (preset) => {
         if (preset) {
@@ -257,6 +259,7 @@ export namespace Util {
   }
 
   async function addLabelByState(octokit: Octokit, state: Config.Label) {
+    core.info(`add label by state: ${state}`)
     return getLabelByState(state).catch(() => {
       const pr = getPullRequest()
       const preset = Config.defaults.labels[state]

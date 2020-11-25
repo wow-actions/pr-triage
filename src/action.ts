@@ -27,7 +27,6 @@ export namespace Action {
         const octokit = Util.getOctokit()
         await Util.ensureLabels(octokit)
         const state = await Util.getState(octokit)
-        core.info(`current state: ${state}`)
         if (state) {
           Util.updateLabel(octokit, state)
         } else {

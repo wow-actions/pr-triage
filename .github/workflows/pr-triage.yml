@@ -9,6 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: bubkoo/use-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+          env_name: bot_token
       - name: 🚧　Install
         run: |
           yarn
@@ -17,4 +22,4 @@ jobs:
           yarn build
       - uses: ./
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ env.bot_token  }}
