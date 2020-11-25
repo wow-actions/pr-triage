@@ -24,6 +24,8 @@ jobs:
 
 ## How it works
 
+![workflow](/workflow.png)
+
 Only watching the most recent commit :eyes::
 
 - Do nothing when the PR's title starts from `WIP`, `[WIP]` or `WIP:`.
