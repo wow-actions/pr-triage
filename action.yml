@@ -1,4 +1,4 @@
-name: PR Triage
+name: Pull Request Triage
 description: Add a label depending on the pull request's status.
 author: bubkoo <bubkoo.wy@gmail.com>
 
