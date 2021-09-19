@@ -1,3 +1,10 @@
+## [1.0.10](https://github.com/wow-actions/pr-triage/compare/v1.0.9...v1.0.10) (2021-09-19)
+
+
+### Bug Fixes
+
+* 🐛 get octokit ([29cd3b3](https://github.com/wow-actions/pr-triage/commit/29cd3b36b4b829c8583d458fde7281d3a5276b67))
+
 ## [1.0.9](https://github.com/wow-actions/pr-triage/compare/v1.0.8...v1.0.9) (2021-09-19)
 
 ## [1.0.8](https://github.com/wow-actions/pr-triage/compare/v1.0.7...v1.0.8) (2021-09-19)
