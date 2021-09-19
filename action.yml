@@ -6,6 +6,8 @@ inputs:
   GITHUB_TOKEN:
     description: Your GitHub token for authentication.
     required: true
+  WORKFLOW_ID:
+    description: The workflow id.
 
 runs:
   using: node12
