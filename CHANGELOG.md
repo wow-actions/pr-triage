@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/wow-actions/pr-triage/compare/v1.1.0...v1.1.1) (2021-09-19)
+
+
+### Bug Fixes
+
+* 🐛 action inputs ([c0fe9cb](https://github.com/wow-actions/pr-triage/commit/c0fe9cb35c047b3e6177924a8171467a22510b39))
+
 # [1.1.0](https://github.com/wow-actions/pr-triage/compare/v1.0.2...v1.1.0) (2021-09-19)
 
 
