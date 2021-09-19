@@ -10,11 +10,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: 🚧　Install
-        run: |
-          yarn
+        run: yarn
       - name: 📦　Build
-        run: |
-          yarn build
+        run: yarn build
+
+      - name: 🔑　Generate Token
+        uses: wow-actions/use-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+          env_name: bot_token
+
       - uses: ./
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+          GITHUB_TOKEN: ${{ env.bot_token  }}
