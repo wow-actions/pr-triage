@@ -1,10 +1,10 @@
 # PR Triage
 
-> GitHub Action to add a label depending on the Pull Request's status.
+Automatically labelling PR depending on the PR's status.
 
 ## Usage
 
-Create a `.github/workflows/pr-triage.yml` file in the repository you want to install this action.
+Create a `.github/workflows/pr-triage.yml` file in you repository.
 
 ```yml
 name: PR Triage
@@ -17,14 +17,14 @@ jobs:
   triage:
     runs-on: ubuntu-latest
     steps:
-      - uses: bubkoo/pr-triage@v1
+      - uses: wow-actions/pr-triage@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## How it works
 
-![workflow](/workflow.png)
+![workflow](screenshots/workflow.png)
 
 Only watching the most recent commit :eyes::
 

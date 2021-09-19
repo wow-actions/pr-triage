@@ -1,5 +1,5 @@
 name: Pull Request Triage
-description: Add a label depending on the pull request's status.
+description: Automatically labelling PR depending on the PR's status.
 author: bubkoo <bubkoo.wy@gmail.com>
 
 inputs:
@@ -13,4 +13,4 @@ runs:
 
 branding:
   icon: check
-  color: orange # gray-dark purple red orange green blue yellow black white
+  color: orange

@@ -1,18 +1,14 @@
+/* eslint-disable camelcase */
+
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { Config } from './config'
+import { Octokit } from './octokit'
 
 export namespace Util {
-  type Octokit = ReturnType<typeof getOctokit>
-
-  export function getOctokit() {
-    const token = core.getInput('GITHUB_TOKEN', { required: true })
-    return github.getOctokit(token)
-  }
-
   export function isValidEvent(event: string, action?: string) {
-    const context = github.context
-    const payload = context.payload
+    const { context } = github
+    const { payload } = context
     if (event === context.eventName) {
       return action == null || action === payload.action
     }
@@ -23,13 +19,13 @@ export namespace Util {
     const labels = Object.values(Config.defaults.labels)
     return Promise.all(
       labels.map(async ({ name, color, description }) => {
-        return octokit.issues
+        return octokit.rest.issues
           .getLabel({
             ...github.context.repo,
             name,
           })
           .catch(() => {
-            return octokit.issues.createLabel({
+            return octokit.rest.issues.createLabel({
               ...github.context.repo,
               name,
               color,
@@ -41,7 +37,7 @@ export namespace Util {
   }
 
   function getPullRequest() {
-    const context = github.context
+    const { context } = github
     return (context.payload.pull_request ||
       context.payload.review.pull_request) as Exclude<
       typeof context.payload.pull_request,
@@ -53,7 +49,7 @@ export namespace Util {
     const pr = getPullRequest()
     // Ignore inconsitent variable name conversation
     // because of https://octokit.github.io/rest.js/v17#pulls-list-reviews
-    return octokit.pulls
+    return octokit.rest.pulls
       .listReviews({ ...github.context.repo, pull_number: pr.number })
       .then((res) => res.data || [])
   }
@@ -61,7 +57,7 @@ export namespace Util {
   async function getUniqueReviews(octokit: Octokit) {
     const reviews = await getReviews(octokit)
     const pr = getPullRequest()
-    const sha = pr.head.sha
+    const { sha } = pr.head
     const uniqueReviews = reviews
       .filter((review) => review.commit_id === sha)
       .filter(
@@ -70,18 +66,18 @@ export namespace Util {
       )
       .reduce<{ [id: number]: { state: string; submitted_at: string } }>(
         (memo, review) => {
-          if (memo[review.user.id] == null) {
-            memo[review.user.id] = {
+          if (memo[review.user!.id] == null) {
+            memo[review.user!.id] = {
               state: review.state,
-              submitted_at: review.submitted_at,
+              submitted_at: review.submitted_at!,
             }
           } else {
-            const a = new Date(memo[review.user.id]['submitted_at']).getTime()
-            const b = new Date(review.submitted_at).getTime()
+            const a = new Date(memo[review.user!.id].submitted_at).getTime()
+            const b = new Date(review.submitted_at!).getTime()
             if (a < b) {
-              memo[review.user.id] = {
+              memo[review.user!.id] = {
                 state: review.state,
-                submitted_at: review.submitted_at,
+                submitted_at: review.submitted_at!,
               }
             }
           }
@@ -101,41 +97,44 @@ export namespace Util {
    */
   async function getRequiredNumberOfReviews(octokit: Octokit): Promise<number> {
     const pr = getPullRequest()
-    return await octokit.repos
-      // See: https://developer.github.com/v3/previews/#require-multiple-approving-reviews
-      .getBranchProtection({
-        ...github.context.repo,
-        branch: pr.base.ref,
-        mediaType: {
-          previews: ['luke-cage'],
-        },
-      })
-      .then(({ data }) => {
-        // If the Branch protection rule is configure but the Requrie pull
-        // request review before mergning is not set, it does not have
-        // `required_pull_request_reviews` property
-        if (!data.hasOwnProperty('required_pull_request_reviews')) {
-          throw new Error('Required reviews not configured error')
-        }
+    return (
+      octokit.rest.repos
+        // See: https://developer.github.com/v3/previews/#require-multiple-approving-reviews
+        .getBranchProtection({
+          ...github.context.repo,
+          branch: pr.base.ref,
+          mediaType: {
+            previews: ['luke-cage'],
+          },
+        })
+        .then(({ data }) => {
+          // If the Branch protection rule is configure but the Requrie pull
+          // request review before mergning is not set, it does not have
+          // `required_pull_request_reviews` property
+          // eslint-disable-next-line no-prototype-builtins
+          if (!data.hasOwnProperty('required_pull_request_reviews')) {
+            throw new Error('Required reviews not configured error')
+          }
 
-        return (
-          data.required_pull_request_reviews.required_approving_review_count ||
-          1
-        )
-      })
-      .catch((err) => {
-        // Return the minium number of reviews if it's 403 or 403 because
-        // Administration Permission is not granted (403) or Branch Protection
-        // is not set up(404).
-        if (
-          err.status === 404 ||
-          err.status === 403 ||
-          err.message === 'Required reviews not configured error'
-        ) {
-          return 1
-        }
-        throw err
-      })
+          return (
+            data.required_pull_request_reviews!
+              .required_approving_review_count || 1
+          )
+        })
+        .catch((err) => {
+          // Return the minium number of reviews if it's 403 or 403 because
+          // Administration Permission is not granted (403) or Branch Protection
+          // is not set up(404).
+          if (
+            err.status === 404 ||
+            err.status === 403 ||
+            err.message === 'Required reviews not configured error'
+          ) {
+            return 1
+          }
+          throw err
+        })
+    )
   }
 
   /**
@@ -143,7 +142,7 @@ export namespace Util {
    */
   async function getRequestedNumberOfReviews(octokit: Octokit) {
     const pr = getPullRequest()
-    return octokit.pulls
+    return octokit.rest.pulls
       .listRequestedReviewers({
         ...github.context.repo,
         pull_number: pr.number,
@@ -201,27 +200,8 @@ export namespace Util {
     if (reviews.length === approvedReviews.length) {
       return 'approved'
     }
-  }
 
-  export async function updateLabel(
-    octokit: Octokit,
-    currentState: Config.State,
-  ) {
-    const previousState = getPreviousState()
-    core.info(`previous state: ${previousState}`)
-    core.info(`current state: ${currentState}`)
-    if (previousState) {
-      if (currentState === 'wip') {
-        await removeLabelByState(octokit, previousState as Config.Label)
-      } else if (previousState !== currentState) {
-        await removeLabelByState(octokit, previousState as Config.Label)
-        await addLabelByState(octokit, currentState as Config.Label)
-      }
-    } else {
-      if (currentState !== 'wip') {
-        await addLabelByState(octokit, currentState as Config.Label)
-      }
-    }
+    return undefined
   }
 
   function getPreviousState(): Config.Label | undefined {
@@ -241,22 +221,20 @@ export namespace Util {
       .filter((key: string) => key != null)[0]
   }
 
-  async function removeLabelByState(octokit: Octokit, state: Config.Label) {
-    core.info(`remove label by state: ${state}`)
-    // TODO: scrects are not available in pull_request_review event in forked repo.
-    return getLabelByState(state).then(
-      (preset) => {
-        if (preset) {
-          const pr = getPullRequest()
-          return octokit.issues.removeLabel({
-            ...github.context.repo,
-            issue_number: pr.number,
-            name: preset.name,
-          })
+  async function getLabelByState(
+    state: Config.Label,
+  ): Promise<{ name: string; color: string; description: string }> {
+    return new Promise((resolve, reject) => {
+      const { labels } = getPullRequest()
+      const preset = Config.defaults.labels[state]
+      // eslint-disable-next-line no-restricted-syntax
+      for (const label of labels) {
+        if (label.name === preset.name) {
+          resolve(preset)
         }
-      },
-      () => {}, // Do nothing for error handling.
-    )
+      }
+      reject()
+    })
   }
 
   async function addLabelByState(octokit: Octokit, state: Config.Label) {
@@ -264,7 +242,7 @@ export namespace Util {
     return getLabelByState(state).catch(() => {
       const pr = getPullRequest()
       const preset = Config.defaults.labels[state]
-      return octokit.issues.addLabels({
+      return octokit.rest.issues.addLabels({
         ...github.context.repo,
         issue_number: pr.number,
         labels: [preset.name],
@@ -272,18 +250,43 @@ export namespace Util {
     })
   }
 
-  async function getLabelByState(
-    state: Config.Label,
-  ): Promise<{ name: string; color: string; description: string }> {
-    return new Promise((resolve, reject) => {
-      const labels = getPullRequest().labels
-      const preset = Config.defaults.labels[state]
-      for (const label of labels) {
-        if ((label.name = preset.name)) {
-          resolve(preset)
+  async function removeLabelByState(octokit: Octokit, state: Config.Label) {
+    core.info(`remove label by state: ${state}`)
+    // TODO: scrects are not available in pull_request_review event in forked repo.
+    return getLabelByState(state).then(
+      (preset) => {
+        if (preset) {
+          const pr = getPullRequest()
+          return octokit.rest.issues.removeLabel({
+            ...github.context.repo,
+            issue_number: pr.number,
+            name: preset.name,
+          })
         }
+        return undefined
+      },
+      () => {
+        // Do nothing for error handling.
+      },
+    )
+  }
+
+  export async function updateLabel(
+    octokit: Octokit,
+    currentState: Config.State,
+  ) {
+    const previousState = getPreviousState()
+    core.info(`previous state: ${previousState}`)
+    core.info(`current state: ${currentState}`)
+    if (previousState) {
+      if (currentState === 'wip') {
+        await removeLabelByState(octokit, previousState as Config.Label)
+      } else if (previousState !== currentState) {
+        await removeLabelByState(octokit, previousState as Config.Label)
+        await addLabelByState(octokit, currentState as Config.Label)
       }
-      reject()
-    })
+    } else if (currentState !== 'wip') {
+      await addLabelByState(octokit, currentState as Config.Label)
+    }
   }
 }
