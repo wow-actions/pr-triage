@@ -91,6 +91,7 @@ async function getPRBySha(sha: string, octokit: Octokit) {
 
 async function getHeadSha(octokit: Octokit) {
   const id = getWorkflowId()
+  core.debug(`workflow id: ${id}`)
   const source = await octokit.rest.actions
     .getWorkflowRun({
       ...github.context.repo,
@@ -108,6 +109,8 @@ async function getHeadSha(octokit: Octokit) {
     core.debug(JSON.stringify(source))
     throw message
   }
+
+  core.debug(`head sha: ${source.head_sha}`)
 
   return source.head_sha
 }
