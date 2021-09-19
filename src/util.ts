@@ -253,8 +253,8 @@ export namespace Util {
   async function removeLabelByState(octokit: Octokit, state: Config.Label) {
     core.info(`remove label by state: ${state}`)
     // TODO: scrects are not available in pull_request_review event in forked repo.
-    return getLabelByState(state).then(
-      (preset) => {
+    return getLabelByState(state)
+      .then((preset) => {
         if (preset) {
           const pr = getPullRequest()
           return octokit.rest.issues.removeLabel({
@@ -264,11 +264,10 @@ export namespace Util {
           })
         }
         return undefined
-      },
-      () => {
-        // Do nothing for error handling.
-      },
-    )
+      })
+      .catch((e) => {
+        core.debug(e)
+      })
   }
 
   export async function updateLabel(
