@@ -1,6 +1,6 @@
 # PR Triage
 
-Automatically labelling PR depending on the PR's status.
+> Automatically labelling PR depending on the PR's status.
 
 ## Usage
 
