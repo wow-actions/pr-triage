@@ -1,16 +1,15 @@
 name: Pull Request Triage
 description: Automatically labelling PR depending on the PR's status.
 author: bubkoo <bubkoo.wy@gmail.com>
-
 inputs:
   GITHUB_TOKEN:
     description: Your GitHub token for authentication.
     required: true
-
+  WORKFLOW_ID:
+    description: The workflow ID.
 runs:
   using: node12
   main: dist/index.js
-
 branding:
   icon: check
   color: orange
