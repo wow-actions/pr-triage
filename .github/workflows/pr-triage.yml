@@ -4,23 +4,32 @@ on:
     types: [opened, closed, edited, reopened, synchronize, ready_for_review]
   pull_request_review:
     types: [submitted, dismissed]
+  repository_dispatch:
+    types: [pr-triage-on-pull-request-review]
+
 jobs:
-  run:
+  triage:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'repository_dispatch' }}
     steps:
       - uses: actions/checkout@v2
       - name: 🚧　Install
         run: yarn
       - name: 📦　Build
         run: yarn build
-
-      - name: 🔑　Generate Token
-        uses: wow-actions/use-app-token@v1
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.PRIVATE_KEY }}
-          env_name: bot_token
-
       - uses: ./
         with:
-          GITHUB_TOKEN: ${{ env.bot_token  }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+
+  dummy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request_review' }}
+    steps:
+      - name: Tips
+        run: echo "this is a dummy job that dispatch a repository event; it's necessary because otherwise the repo secrets will not be in scope for externally forked pull requests"
+      - name: 🔀　Repository Dispatch
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN  }}
+          event-type: pr-triage-on-pull-request-review
+          client-payload: '{"sha": "${{ github.sha }}"}'
