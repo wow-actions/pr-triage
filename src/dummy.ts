@@ -1,27 +1,9 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-
-function getToken() {
-  const token = process.env.GITHUB_TOKEN
-  if (!token) {
-    const message = 'github token must be defined'
-    core.setFailed(message)
-    throw message
-  }
-
-  try {
-    github.getOctokit(token)
-  } catch (err) {
-    const message = 'token provided failed to initialize octokit'
-    core.setFailed(message)
-    throw message
-  }
-
-  return token
-}
+import { Octokit } from './octokit'
 
 function getWorkflowId() {
-  const id = process.env.WORKFLOW_ID
+  const id = core.getInput('WORKFLOW_ID')
 
   if (!id) {
     const message = 'no workflow id was given, but a workflow id is required'
@@ -43,22 +25,7 @@ function getWorkflowId() {
   throw message
 }
 
-function getOctokit() {
-  const token = getToken()
-  const octokit = github.getOctokit(token)
-
-  if (!octokit) {
-    const message = 'something went wrong when instantiating octokit'
-    core.setFailed(message)
-    throw message
-  }
-
-  return octokit
-}
-
-async function getPR(prNum: number) {
-  const octokit = getOctokit()
-
+async function getPRbyID(prNum: number, octokit: Octokit) {
   const { data: pr } = await octokit.rest.pulls.get({
     ...github.context.repo,
     pull_number: prNum,
@@ -79,13 +46,12 @@ async function getPR(prNum: number) {
   return pr
 }
 
-async function getPRFromSha(sha: string) {
+async function getPRBySha(sha: string, octokit: Octokit) {
   // Finds Pull request for this workflow run
-  core.info(
+  core.debug(
     `\nFinding PR request id for: owner: ${github.context.repo.owner}, Repo: ${github.context.repo.repo}.\n`,
   )
 
-  const octokit = getOctokit()
   const prs = await octokit.rest.search
     .issuesAndPullRequests({
       q: `q=${[
@@ -120,13 +86,11 @@ async function getPRFromSha(sha: string) {
 
   // provided the above assertions, this number is guaranteed to be defined
   const prNum = prs.items[0]?.number
-  return getPR(prNum)
+  return getPRbyID(prNum, octokit)
 }
 
-async function getHeadSha() {
+async function getHeadSha(octokit: Octokit) {
   const id = getWorkflowId()
-  const octokit = getOctokit()
-
   const source = await octokit.rest.actions
     .getWorkflowRun({
       ...github.context.repo,
@@ -148,22 +112,7 @@ async function getHeadSha() {
   return source.head_sha
 }
 
-function checkWorkflowRun() {
-  if (github.context.eventName !== 'workflow_run') {
-    const message = [
-      'this action requires that it be a side-effect run within a workflow_run;',
-      'this is because the standard event triggers are not able to access this',
-      'action outside of the scope of a workflow_run which is always in-scope',
-      'with the main repository',
-    ].join(' ')
-    core.setFailed(message)
-    throw message
-  }
-  return true
-}
-
-export async function requirePRFromWorkflowRun() {
-  checkWorkflowRun()
-  const sha = await getHeadSha()
-  return getPRFromSha(sha)
+export async function getPRFromWorkflow(octokit: Octokit) {
+  const sha = await getHeadSha(octokit)
+  return getPRBySha(sha, octokit)
 }

@@ -2,10 +2,11 @@ name: PR Triage
 on:
   pull_request_target:
     types: [opened, closed, edited, reopened, synchronize, ready_for_review]
-  pull_request_review:
-    types: [submitted, dismissed]
-  repository_dispatch:
-    types: [pr-triage-on-pull-request-review]
+  workflow_run:
+    workflows:
+      - PR Triage Dummy
+    types:
+      - requested # I recommend this because sometimes issues can arise with external submissions requiring permission to run the bot, but with this the workflow_run will be triggered regardless
 
 jobs:
   triage:
@@ -20,16 +21,4 @@ jobs:
       - uses: ./
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-
-  dummy:
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request_review' }}
-    steps:
-      - name: Tips
-        run: echo "this is a dummy job that dispatch a repository event; it's necessary because otherwise the repo secrets will not be in scope for externally forked pull requests"
-      - name: 🔀　Repository Dispatch
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN  }}
-          event-type: pr-triage-on-pull-request-review
-          client-payload: '{"sha": "${{ github.sha }}"}'
+          WORKFLOW-ID: ${{github.event.workflow_run.id}}

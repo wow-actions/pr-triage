@@ -6,6 +6,11 @@ import { Config } from './config'
 import { Octokit } from './octokit'
 
 export namespace Util {
+  type PullRequest = Exclude<
+    typeof github.context.payload.pull_request,
+    undefined
+  >
+
   export function isValidEvent(event: string, action?: string) {
     const { context } = github
     const { payload } = context
@@ -36,17 +41,7 @@ export namespace Util {
     )
   }
 
-  function getPullRequest() {
-    const { context } = github
-    return (context.payload.pull_request ||
-      context.payload.review.pull_request) as Exclude<
-      typeof context.payload.pull_request,
-      undefined
-    >
-  }
-
-  async function getReviews(octokit: Octokit) {
-    const pr = getPullRequest()
+  async function getReviews(octokit: Octokit, pr: PullRequest) {
     // Ignore inconsitent variable name conversation
     // because of https://octokit.github.io/rest.js/v17#pulls-list-reviews
     return octokit.rest.pulls
@@ -54,9 +49,8 @@ export namespace Util {
       .then((res) => res.data || [])
   }
 
-  async function getUniqueReviews(octokit: Octokit) {
-    const reviews = await getReviews(octokit)
-    const pr = getPullRequest()
+  async function getUniqueReviews(octokit: Octokit, pr: PullRequest) {
+    const reviews = await getReviews(octokit, pr)
     const { sha } = pr.head
     const uniqueReviews = reviews
       .filter((review) => review.commit_id === sha)
@@ -95,8 +89,10 @@ export namespace Util {
    * or `1` if Administration Permission is not granted or Branch Protection
    * is not set up.
    */
-  async function getRequiredNumberOfReviews(octokit: Octokit): Promise<number> {
-    const pr = getPullRequest()
+  async function getRequiredNumberOfReviews(
+    octokit: Octokit,
+    pr: PullRequest,
+  ): Promise<number> {
     return (
       octokit.rest.repos
         // See: https://developer.github.com/v3/previews/#require-multiple-approving-reviews
@@ -140,8 +136,10 @@ export namespace Util {
   /**
    * Get the number of users/teams that have been requested to review the PR
    */
-  async function getRequestedNumberOfReviews(octokit: Octokit) {
-    const pr = getPullRequest()
+  async function getRequestedNumberOfReviews(
+    octokit: Octokit,
+    pr: PullRequest,
+  ) {
     return octokit.rest.pulls
       .listRequestedReviewers({
         ...github.context.repo,
@@ -150,9 +148,10 @@ export namespace Util {
       .then((res) => res.data.teams.length + res.data.users.length)
   }
 
-  export async function getState(octokit: Octokit): Promise<Config.State> {
-    const pr = getPullRequest()
-
+  export async function getState(
+    octokit: Octokit,
+    pr: PullRequest,
+  ): Promise<Config.State> {
     if (pr.draft) {
       return 'draft'
     }
@@ -165,10 +164,14 @@ export namespace Util {
       return 'merged'
     }
 
-    const reviews = await getUniqueReviews(octokit)
-    const requiredNumberOfReviews = await getRequiredNumberOfReviews(octokit)
+    const reviews = await getUniqueReviews(octokit, pr)
+    const requiredNumberOfReviews = await getRequiredNumberOfReviews(
+      octokit,
+      pr,
+    )
     const numRequestedReviewsRemaining = await getRequestedNumberOfReviews(
       octokit,
+      pr,
     )
 
     if (reviews.length === 0) {
@@ -204,7 +207,7 @@ export namespace Util {
     return undefined
   }
 
-  function getPreviousState(): Config.Label | undefined {
+  function getPreviousState(pr: PullRequest): Config.Label | undefined {
     const presets = Config.defaults.labels
     const states = Object.keys(presets).reduce<{ [label: string]: string }>(
       (memo, state: Config.Label) => {
@@ -214,8 +217,8 @@ export namespace Util {
       {},
     )
 
-    return getPullRequest()
-      .labels.map((label: any) => {
+    return pr.labels
+      .map((label: any) => {
         return label.name && states[label.name]
       })
       .filter((key: string) => key != null)[0]
@@ -223,9 +226,10 @@ export namespace Util {
 
   async function getLabelByState(
     state: Config.Label,
+    pr: PullRequest,
   ): Promise<{ name: string; color: string; description: string }> {
     return new Promise((resolve, reject) => {
-      const { labels } = getPullRequest()
+      const { labels } = pr
       const preset = Config.defaults.labels[state]
       // eslint-disable-next-line no-restricted-syntax
       for (const label of labels) {
@@ -237,10 +241,13 @@ export namespace Util {
     })
   }
 
-  async function addLabelByState(octokit: Octokit, state: Config.Label) {
+  async function addLabelByState(
+    octokit: Octokit,
+    state: Config.Label,
+    pr: PullRequest,
+  ) {
     core.info(`add label by state: ${state}`)
-    return getLabelByState(state).catch(() => {
-      const pr = getPullRequest()
+    return getLabelByState(state, pr).catch(() => {
       const preset = Config.defaults.labels[state]
       return octokit.rest.issues.addLabels({
         ...github.context.repo,
@@ -250,13 +257,15 @@ export namespace Util {
     })
   }
 
-  async function removeLabelByState(octokit: Octokit, state: Config.Label) {
+  async function removeLabelByState(
+    octokit: Octokit,
+    state: Config.Label,
+    pr: PullRequest,
+  ) {
     core.info(`remove label by state: ${state}`)
-    // TODO: scrects are not available in pull_request_review event in forked repo.
-    return getLabelByState(state)
+    return getLabelByState(state, pr)
       .then((preset) => {
         if (preset) {
-          const pr = getPullRequest()
           return octokit.rest.issues.removeLabel({
             ...github.context.repo,
             issue_number: pr.number,
@@ -273,19 +282,20 @@ export namespace Util {
   export async function updateLabel(
     octokit: Octokit,
     currentState: Config.State,
+    pr: PullRequest,
   ) {
-    const previousState = getPreviousState()
+    const previousState = getPreviousState(pr)
     core.info(`previous state: ${previousState}`)
     core.info(`current state: ${currentState}`)
     if (previousState) {
       if (currentState === 'wip') {
-        await removeLabelByState(octokit, previousState as Config.Label)
+        await removeLabelByState(octokit, previousState as Config.Label, pr)
       } else if (previousState !== currentState) {
-        await removeLabelByState(octokit, previousState as Config.Label)
-        await addLabelByState(octokit, currentState as Config.Label)
+        await removeLabelByState(octokit, previousState as Config.Label, pr)
+        await addLabelByState(octokit, currentState as Config.Label, pr)
       }
     } else if (currentState !== 'wip') {
-      await addLabelByState(octokit, currentState as Config.Label)
+      await addLabelByState(octokit, currentState as Config.Label, pr)
     }
   }
 }
