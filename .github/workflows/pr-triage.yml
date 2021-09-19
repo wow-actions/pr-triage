@@ -11,7 +11,6 @@ on:
 jobs:
   triage:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request_target' || github.event_name == 'repository_dispatch' }}
     steps:
       - uses: actions/checkout@v2
       - name: 🚧　Install

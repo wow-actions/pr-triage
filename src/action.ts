@@ -37,6 +37,12 @@ export async function run() {
 
     if (
       Util.isValidEvent('workflow_run') ||
+      Util.isValidEvent('pull_request', 'opened') ||
+      Util.isValidEvent('pull_request', 'closed') ||
+      Util.isValidEvent('pull_request', 'edited') ||
+      Util.isValidEvent('pull_request', 'reopened') ||
+      Util.isValidEvent('pull_request', 'synchronize') ||
+      Util.isValidEvent('pull_request', 'ready_for_review') ||
       Util.isValidEvent('pull_request_target', 'opened') ||
       Util.isValidEvent('pull_request_target', 'closed') ||
       Util.isValidEvent('pull_request_target', 'edited') ||
