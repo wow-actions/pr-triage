@@ -53,7 +53,7 @@ export async function run() {
       const octokit = Octokit.get()
       const pr =
         github.context.eventName === 'workflow_run'
-          ? await getPRFromWorkflow(octokit)
+          ? await getPRFromWorkflow()
           : github.context.payload.pull_request!
 
       await Util.ensureLabels(octokit)

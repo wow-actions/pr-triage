@@ -2,6 +2,30 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { Octokit } from './octokit'
 
+function getToken() {
+  const token = process.env.GITHUB_TOKEN
+  if (!token) {
+    const message = 'github token must be defined'
+    core.setFailed(message)
+    throw message
+  }
+
+  return token
+}
+
+function getOctokit() {
+  const token = getToken()
+  const octokit = github.getOctokit(token)
+
+  if (!octokit) {
+    const message = 'something went wrong when instantiating octokit'
+    core.setFailed(message)
+    throw message
+  }
+
+  return octokit
+}
+
 function getWorkflowId() {
   const id = core.getInput('WORKFLOW_ID')
 
@@ -115,7 +139,8 @@ async function getHeadSha(octokit: Octokit) {
   return source.head_sha
 }
 
-export async function getPRFromWorkflow(octokit: Octokit) {
+export async function getPRFromWorkflow() {
+  const octokit = getOctokit()
   const sha = await getHeadSha(octokit)
   return getPRBySha(sha, octokit)
 }
