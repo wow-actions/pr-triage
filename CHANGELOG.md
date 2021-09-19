@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/wow-actions/pr-triage/compare/v1.0.6...v1.0.7) (2021-09-19)
+
+
+### Bug Fixes
+
+* 🐛 event trigger ([7c4688f](https://github.com/wow-actions/pr-triage/commit/7c4688f5e1347c014dc5181af02aa59210673f44))
+
 ## [1.0.6](https://github.com/wow-actions/pr-triage/compare/v1.0.5...v1.0.6) (2021-09-19)
 
 
