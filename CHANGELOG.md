@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/wow-actions/pr-triage/compare/v1.0.5...v1.0.6) (2021-09-19)
+
+
+### Bug Fixes
+
+* 🐛 resource not accessible by integration ([6d087d7](https://github.com/wow-actions/pr-triage/commit/6d087d7b5f913958cf58d37abc4bc0a6abd7d7bb))
+
 ## [1.0.5](https://github.com/wow-actions/pr-triage/compare/v1.0.4...v1.0.5) (2021-09-19)
 
 
