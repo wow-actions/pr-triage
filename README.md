@@ -54,7 +54,7 @@ jobs:
       - uses: wow-actions/pr-triage@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-          WORKFLOW-ID: ${{ github.event.workflow_run.id }}
+          WORKFLOW_ID: ${{ github.event.workflow_run.id }}
 ```
 
 ## How it works
