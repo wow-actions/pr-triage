@@ -1,11 +1,11 @@
 <h1 align="center">Pull Request Triage</h1>
 
 <p align="center">
+  <a href="https://github.com/wow-actions/pr-triage/actions/workflows/release.yml"><img alt="build" src="https://img.shields.io/github/actions/workflow/status/wow-actions/pr-triage/release.yml?branch=master&logo=github&style=flat-square" ></a>
   <a href="/wow-actions/pr-triage/blob/master/LICENSE"><img alt="MIT License" src="https://img.shields.io/github/license/wow-actions/pr-triage?style=flat-square"></a>
   <a href="https://www.typescriptlang.org" rel="nofollow"><img alt="Language" src="https://img.shields.io/badge/language-TypeScript-blue.svg?style=flat-square"></a>
   <a href="https://github.com/wow-actions/pr-triage/pulls"><img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=flat-square" ></a>
   <a href="https://github.com/marketplace/actions/pr-triage" rel="nofollow"><img alt="website" src="https://img.shields.io/static/v1?label=&labelColor=505050&message=Marketplace&color=0076D6&style=flat-square&logo=google-chrome&logoColor=0076D6" ></a>
-  <a href="https://github.com/wow-actions/pr-triage/actions/workflows/release.yml"><img alt="build" src="https://img.shields.io/github/workflow/status/wow-actions/pr-triage/Release/master?logo=github&style=flat-square" ></a>
   <a href="https://lgtm.com/projects/g/wow-actions/pr-triage/context:javascript" rel="nofollow"><img alt="Language grade: JavaScript" src="https://img.shields.io/lgtm/grade/javascript/g/wow-actions/pr-triage.svg?logo=lgtm&style=flat-square" ></a>
 </p>
 
